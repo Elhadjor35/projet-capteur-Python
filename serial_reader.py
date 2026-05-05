@@ -9,62 +9,64 @@ import serial
 import time
 import random
 import numpy as np
+import datetime
 
-def read_serial(mode="sim", port='COM3', baudrate=9600):
-    
-    if mode == "real":
-        
+
+def read_serial(mode="Simulation", port='/dev/ttyACM0', baudrate=9600):
+
+    if mode == "Real":
+
         try:
             # Ouvrir le port série (remplace 'COM7' par ton port réel)
-            ser = serial.Serial('COM4', 9600, timeout=1)
-        
+            ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+            print(ser)
+
             print("Lecture en cours... (Ctrl+C pour arrêter)")
-        
+
             while True:
-                line =  ser.readline().decode().strip()  # Lire et décoder la ligne reçue
-                if line:  # Vérifier si la ligne n'est pas vide
-                    yield line  # Aff icher les données reçues
+                line = ser.readline().decode().strip()  # Lire et décoder la ligne reçue
+                if line:
+                    # print("RAW:", line)  # debug
+
+                    parts = line.split('\t')
+
+                    if len(parts) != 9:
+                        print("Format incorrect :", line)
+                        continue
+
+                    try:
+                        jour, mois, annee, heure, minute, seconde = map(
+                            int, parts[:6])
+                        temp, hum, lum = map(float, parts[6:])
+
+                        timestamp = datetime.datetime(2000 + annee, mois, jour,
+                                                      heure, minute, seconde).timestamp()
+                        line = f"{timestamp} {round(temp, 1)} {round(hum)} {round(lum)}"
+                        yield line
+
+                    except ValueError:
+                        print("Erreur conversion :", line)
+                        continue
 
         except serial.SerialException as e:
-             print(f"Erreur d'accès au port série : {e}")
-        
+            yield e
+            print(f"Erreur d'accès au port série : {e}")
+
         except KeyboardInterrupt:
             print("\nArrêt du programme.")
 
-    elif mode == "sim":
-        print("Mode simulation activé")
+        finally:
+            if 'ser' in locals() and ser.is_open:
+                ser.close()  # Fermer proprement le port série
+
+    elif mode == "Simulation":
         t = 0
         while True:
             temp = 25 + 3 * np.sin(t/10) + random.uniform(-1, 1)
             hum = 60 + 10 * np.sin(t/15) + random.uniform(-1, 1)
             lum = 50 + 20 * np.sin(t/5) + random.uniform(-1, 1)
-
-            line = f"{round(temp,1)} {round(hum)} {round(lum)}"
-            
-            yield line
-            
+            timestamp = int(time.time())
+            line = f"{timestamp} {round(temp, 1)} {round(hum)} {round(lum)}"
             t += 1
-            time.sleep(1) # 1 mesure par seconde
-
-        # except serial.SerialException as e:
-        #      print(f"Erreur d'accès au port série : {e}")
-        
-        # except KeyboardInterrupt:
-        #     print("\nArrêt du programme.")
-        
-        # finally:
-        #     if 'ser' in locals() and ser.is_open:
-        #         ser.close()  # Fermer proprement le port série
-        
-        
-# def read_serial(port='COM17', baudrate=9600):
-#     ser = serial.Serial(port, baudrate, timeout=1)
-
-#     try:
-#         while True:
-#             line = ser.readline().decode().strip()
-#             if line:
-#                 yield line
-
-#     finally:
-#         ser.close()
+            time.sleep(1)
+            yield line
