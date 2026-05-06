@@ -40,7 +40,7 @@ class MainWindow(pg.GraphicsLayoutWidget):
         self.graph.update_choice(s)
 
     def get_data(self):
-        file = '09021704.TXT'
+        file = '28030254.TXT'
         df = pd.read_table(
             file, sep='\s+',  # Choisir le nom du fichier
             names=['day', 'month', 'year', 'hour',
