@@ -10,7 +10,6 @@ import pyqtgraph as pg
 import numpy as np
 import time
 from serial_reader import read_serial
-import serial
 
 
 class MainWindow(pg.GraphicsLayoutWidget):
@@ -160,6 +159,7 @@ class Worker(QThread):
                 except AttributeError:
                     # print(f"Erreur d'accès au port série : {e}")
                     self.stop()
+
                 except ValueError:
                     print("Erreur conversion :", line)
                     continue
