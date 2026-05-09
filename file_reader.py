@@ -6,12 +6,13 @@ Created on Fri Feb 20 14:58:56 2026
 @author: elhadj
 """
 
-from PySide6.QtWidgets import QApplication, QVBoxLayout, QComboBox, QLabel
+from PySide6.QtWidgets import QApplication, QVBoxLayout, QComboBox, QLabel, QFileDialog
 from PySide6.QtCore import QThread, Signal, Slot
 import pyqtgraph as pg
 import numpy as np
 import time
 import pandas as pd
+import os
 
 
 class MainWindow(pg.GraphicsLayoutWidget):
@@ -40,20 +41,29 @@ class MainWindow(pg.GraphicsLayoutWidget):
         self.graph.update_choice(s)
 
     def get_data(self):
-        file = '28030254.TXT'
-        df = pd.read_table(
-            file, sep='\s+',  # Choisir le nom du fichier
-            names=['day', 'month', 'year', 'hour',
-                   'minute', 'second', "Temperature", "Humidity", "Luminosity"],
-            header=0, parse_dates={'Time': ['day', 'month', 'year', 'hour',
-                                            'minute', 'second']},
-            date_format={'Time': '%d %m %y %H %M %S'})
-        df2 = df.drop(df[(df["Temperature"] == 0) & (df["Luminosity"] == 0)
-                         & (df["Humidity"] == 0)].index).reset_index()
-        df3 = df2
-        df3['Time'] = df2['Time'].dt.tz_localize(tz='Europe/Paris')
-        df3['Time_unix'] = pd.to_datetime(df3['Time']).astype(int) / 10**9
-        self.df = df3
+        file = QFileDialog.getOpenFileName(self,
+                                           # '28030254.TXT'
+                                           # , "Text Files (*.txt *.csv)")
+                                           "Open File", os.getcwd(), "Text Files (*.txt)")
+        # print(file[0])
+
+        try:
+            df = pd.read_table(
+                file[0], sep='\s+',  # Choisir le nom du fichier
+                names=['day', 'month', 'year', 'hour',
+                       'minute', 'second', "Temperature", "Humidity", "Luminosity"],
+                header=0, parse_dates={'Time': ['day', 'month', 'year', 'hour',
+                                                'minute', 'second']},
+                date_format={'Time': '%d %m %y %H %M %S'})
+            df2 = df.drop(df[(df["Temperature"] == 0) & (df["Luminosity"] == 0)
+                             & (df["Humidity"] == 0)].index).reset_index()
+            df3 = df2
+            df3['Time'] = df2['Time'].dt.tz_localize(tz='Europe/Paris')
+            df3['Time_unix'] = pd.to_datetime(df3['Time']).astype(int) / 10**9
+            self.df = df3
+        except pd.errors.ParserError as e:
+            print("Wrong file format", e)
+            sys.exit()
 
     def closeEvent(self, event):
         QApplication.quit()
@@ -90,8 +100,8 @@ class Graph(pg.PlotWidget):
             self.ordinate = self.setLabel("left", s, "%")
             self.setYRange(0, 100)
             data = self.lum
-        print(self.timestamps)
-        print(data)
+        # print(self.timestamps)
+        # print(data)
         self.curve.setData(self.timestamps, data)
         self.setTitle(s)
 

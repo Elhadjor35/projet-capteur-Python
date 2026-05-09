@@ -60,7 +60,7 @@ def read_serial(mode="Simulation", port='/dev/ttyACM0', baudrate=9600):
                 ser.close()  # Fermer proprement le port série
 
     elif mode == "Simulation":
-        t = 0
+        t = time.time()
         while True:
             temp = 25 + 3 * np.sin(t/10) + random.uniform(-1, 1)
             hum = 60 + 10 * np.sin(t/15) + random.uniform(-1, 1)

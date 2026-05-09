@@ -67,7 +67,7 @@ class Graph(pg.PlotWidget):
         super().__init__(parent=None)
         self.title = "Données capteurs"
         self.setAxisItems(axisItems={"bottom": pg.DateAxisItem()})
-        self.abscissa = self.setLabel("bottom", "Temps")
+        self.abscissa = self.setLabel("bottom", "Time")
         self.ordinate = self.setLabel("left", "Temperature", "°C")
         self.curve = self.plot(pen="y")
         self.timestamps = []
@@ -272,7 +272,7 @@ if __name__ == "__main__":
 #         self.plot.addItem(self.mean_text)
 
 #         # Labels axes
-#         self.abscissa = self.plot.setLabel('bottom', 'Temps')
+#         self.abscissa = self.plot.setLabel('bottom', 'Time')
 #         self.ordinate =  self.plot.setLabel('left', "Temperature (°C)")
 #         #self.ordinate.setXRange(0,35)
 #         self.window.show()
