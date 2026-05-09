@@ -56,16 +56,16 @@ class MainWindow(pg.GraphicsLayoutWidget):
 
     def pick_file(self):
         try:
-            file = QFileDialog.getSaveFileName(self,
-                                               # '28030254.TXT'
-                                               # , "Text Files (*.txt *.csv)")
-                                               "Save File", os.getcwd(), "Text Files (*.txt)")
-            assert file[0][-3:].lower() == "txt"
+            self.file = QFileDialog.getSaveFileName(self,
+                                                    # '28030254.TXT'
+                                                    # , "Text Files (*.txt *.csv)")
+                                                    "Save File", os.getcwd(), "Text Files (*.txt)")
+            assert self.file[0][-3:].lower() == "txt"
 
         except AssertionError:
             print("No file selected")
             sys.exit()
-        self.file = file
+        # self.file = file
 
     def make_connection(self, data_object):
         data_object.signal.connect(self.grab_data)
@@ -80,7 +80,7 @@ class MainWindow(pg.GraphicsLayoutWidget):
             save_data(
                 self.file[0], d[0], d[1], d[2], d[3])
         except FileNotFoundError:
-            sys.exit
+            sys.exit()
     # def closeEvent(self, event):
 
 
@@ -184,7 +184,7 @@ class Worker(QThread):
 
                 except ValueError:
                     print("Erreur conversion :", line)
-                    continue
+                    self.stop()
                 self.data = [timestamp, temp, hum, lum]
                 # print(self.data)
                 self.signal.emit(self.data)

@@ -32,7 +32,7 @@ class MainWindow(pg.GraphicsLayoutWidget):
         self.choice = self.selector.currentText()
         self.selector.currentTextChanged.connect(self.choice_changed)
 
-        self.graph = Graph(self.choice, self.df)
+        self.graph = Graph(self.choice, self.df, self.file)
         layout.addWidget(self.graph)
         self.stats_label = QLabel("Stats:")
         layout.addWidget(self.stats_label)
@@ -41,10 +41,10 @@ class MainWindow(pg.GraphicsLayoutWidget):
         self.graph.update_choice(s)
 
     def get_data(self):
-        file = QFileDialog.getOpenFileName(self,
-                                           # '28030254.TXT'
-                                           # , "Text Files (*.txt *.csv)")
-                                           "Open File", os.getcwd(), "Text Files (*.txt)")
+        self.file = QFileDialog.getOpenFileName(self,
+                                                # '28030254.TXT'
+                                                # , "Text Files (*.txt *.csv)")
+                                                "Open File", os.getcwd(), "Text Files (*.txt)")
         # print(file[0])
 
         try:
@@ -70,9 +70,9 @@ class MainWindow(pg.GraphicsLayoutWidget):
 
 
 class Graph(pg.PlotWidget):
-    def __init__(self, choice, df):
+    def __init__(self, choice, df, file):
         super().__init__(parent=None)
-        self.title = "Données capteurs"
+        self.setTitle = self.setTitle(file[0])
         self.setAxisItems(axisItems={"bottom": pg.DateAxisItem()})
         self.abscissa = self.setLabel("bottom", "Temps")
         self.ordinate = self.setLabel("left", "Temperature", "°C")
