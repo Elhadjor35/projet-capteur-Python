@@ -4,17 +4,20 @@ Created on Fri Mar 27 20:21:22 2026
 
 @author: Majdo
 """
-from PySide6.QtWidgets import QApplication, QVBoxLayout, QComboBox, QLabel
+from PySide6.QtWidgets import QApplication, QVBoxLayout, QComboBox, QLabel, QFileDialog
 from PySide6.QtCore import QThread, Signal, Slot
 import pyqtgraph as pg
 import numpy as np
 import time
 from serial_reader import read_serial
+from data_logger import save_data
+import os
 
 
 class MainWindow(pg.GraphicsLayoutWidget):
     def __init__(self, Graph):
         super().__init__(parent=None)
+        self.pick_file()
         self.setup_ui()
         self.worker = Worker()
         self.make_connection(self.worker)
@@ -34,6 +37,7 @@ class MainWindow(pg.GraphicsLayoutWidget):
         layout.addWidget(self.modes)
         self.mode = self.modes.currentText()
         self.modes.currentTextChanged.connect(self.mode_changed)
+
         self.graph = Graph(self.choice, self.mode)
         layout.addWidget(self.graph)
         self.stats_label = QLabel("Stats:")
@@ -50,6 +54,13 @@ class MainWindow(pg.GraphicsLayoutWidget):
         self.worker.stop()
         QApplication.quit()
 
+    def pick_file(self):
+        file = QFileDialog.getSaveFileName(self,
+                                           # '28030254.TXT'
+                                           # , "Text Files (*.txt *.csv)")
+                                           "Save File", os.getcwd(), "Text Files (*.txt)")
+        self.file = file
+
     def make_connection(self, data_object):
         data_object.signal.connect(self.grab_data)
 
@@ -58,7 +69,9 @@ class MainWindow(pg.GraphicsLayoutWidget):
         data = {"Time": d[0], "Temperature": d[1],
                 "Humidity": d[2], "Luminosity": d[3]}
         self.graph.update_curve(data)
-
+        print(self.file)
+        save_data(
+            self.file[0], d[0], d[1], d[2], d[3])
     # def closeEvent(self, event):
 
 
@@ -166,6 +179,7 @@ class Worker(QThread):
                 self.data = [timestamp, temp, hum, lum]
                 # print(self.data)
                 self.signal.emit(self.data)
+
             # print('d')
 
     def change_mode(self, m):
