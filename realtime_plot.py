@@ -55,10 +55,16 @@ class MainWindow(pg.GraphicsLayoutWidget):
         QApplication.quit()
 
     def pick_file(self):
-        file = QFileDialog.getSaveFileName(self,
-                                           # '28030254.TXT'
-                                           # , "Text Files (*.txt *.csv)")
-                                           "Save File", os.getcwd(), "Text Files (*.txt)")
+        try:
+            file = QFileDialog.getSaveFileName(self,
+                                               # '28030254.TXT'
+                                               # , "Text Files (*.txt *.csv)")
+                                               "Save File", os.getcwd(), "Text Files (*.txt)")
+            assert file[0][-3:].lower() == "txt"
+
+        except AssertionError:
+            print("No file selected")
+            sys.exit()
         self.file = file
 
     def make_connection(self, data_object):
@@ -70,8 +76,11 @@ class MainWindow(pg.GraphicsLayoutWidget):
                 "Humidity": d[2], "Luminosity": d[3]}
         self.graph.update_curve(data)
         print(self.file[0])
-        save_data(
-            self.file[0], d[0], d[1], d[2], d[3])
+        try:
+            save_data(
+                self.file[0], d[0], d[1], d[2], d[3])
+        except FileNotFoundError:
+            sys.exit
     # def closeEvent(self, event):
 
 
