@@ -13,16 +13,19 @@ from PyQt5 import QtWidgets
 # Lecture du fichier
 # =========================
 df = pd.read_table(
-    '09021802.txt',
+    '28030254.TXT',
     sep='\s+',
-    names=['Jour', 'Mois', 'Année', 'Heure', 'Minute', 'Seconde', 'Temp', 'Hum', 'Lum'],
+    names=['Jour', 'Mois', 'Année', 'Heure',
+           'Minute', 'Seconde', 'Temp', 'Hum', 'Lum'],
     header=0,
-    parse_dates={'Time': ['Jour', 'Mois', 'Année', 'Heure', 'Minute', 'Seconde']},
+    parse_dates={'Time': ['Jour', 'Mois',
+                          'Année', 'Heure', 'Minute', 'Seconde']},
     date_format='%d %m %y %H %M %S'
 )
 
 # Nettoyage
-df = df.drop(df[(df["Temp"] == 0) & (df["Lum"] == 0) & (df["Hum"] == 0)].index).reset_index(drop=True)
+df = df.drop(df[(df["Temp"] == 0) & (df["Lum"] == 0) &
+             (df["Hum"] == 0)].index).reset_index(drop=True)
 
 df['Time'] = df['Time'].dt.tz_localize('Europe/Paris')
 df['Time_unix'] = df['Time'].astype(int) / 10**9
@@ -58,6 +61,8 @@ layout.addWidget(plot_widget, 4)
 # =========================
 # Fonction affichage
 # =========================
+
+
 def update_plot():
     plot_widget.clear()
 
@@ -99,6 +104,7 @@ def update_plot():
 
     # Ligne moyenne
     plot_widget.addLine(y=y_mean, pen='r')
+
 
 # =========================
 # Connexion clic

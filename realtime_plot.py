@@ -24,7 +24,7 @@ class MainWindow(pg.GraphicsLayoutWidget):
         self.worker.start()
 
     def setup_ui(self):
-        self.setWindowTitle("Capteur")
+        self.setWindowTitle("Sensor")
         layout = QVBoxLayout()
         self.setLayout(layout)
         self.selector = QComboBox()
@@ -38,7 +38,7 @@ class MainWindow(pg.GraphicsLayoutWidget):
         self.mode = self.modes.currentText()
         self.modes.currentTextChanged.connect(self.mode_changed)
 
-        self.graph = Graph(self.choice, self.mode)
+        self.graph = Graph(self.choice, self.mode, self.file)
         layout.addWidget(self.graph)
         self.stats_label = QLabel("Stats:")
         layout.addWidget(self.stats_label)
@@ -69,16 +69,16 @@ class MainWindow(pg.GraphicsLayoutWidget):
         data = {"Time": d[0], "Temperature": d[1],
                 "Humidity": d[2], "Luminosity": d[3]}
         self.graph.update_curve(data)
-        print(self.file)
+        print(self.file[0])
         save_data(
             self.file[0], d[0], d[1], d[2], d[3])
     # def closeEvent(self, event):
 
 
 class Graph(pg.PlotWidget):
-    def __init__(self, choice, mode):
+    def __init__(self, choice, mode, file):
         super().__init__(parent=None)
-        self.title = "Données capteurs"
+        self.setTitle(file[0])
         self.setAxisItems(axisItems={"bottom": pg.DateAxisItem()})
         self.abscissa = self.setLabel("bottom", "Time")
         self.ordinate = self.setLabel("left", "Temperature", "°C")
@@ -103,7 +103,7 @@ class Graph(pg.PlotWidget):
 
     def update_choice(self, s):
         # print(s)
-        self.setTitle(s)
+        # self.setTitle(s)
         self.removeItem(self.ordinate)
         if s == "Temperature":
             self.ordinate = self.setLabel("left", s, "°C")
@@ -133,7 +133,7 @@ class Graph(pg.PlotWidget):
         elif self.choice == "Luminosity":
             data = self.lum
         self.curve.setData(self.timestamps, data)
-        self.setTitle(self.choice)
+        # self.setTitle(self.choice)
         self.curve.setPos(self.timestamps[0], 0)
 
 
