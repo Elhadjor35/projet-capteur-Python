@@ -1,0 +1,5 @@
+day	month	year	hour	minute	second	Temperature	Humidity	Luminosity
+09	05	26	20	22	00	24.8	69.0	40.0
+09	05	26	20	22	01	24.0	69.0	45.0
+09	05	26	20	22	02	23.9	70.0	48.0
+09	05	26	20	22	03	24.9	68.0	51.0
