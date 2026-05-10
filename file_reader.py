@@ -24,7 +24,7 @@ class MainWindow(pg.GraphicsLayoutWidget):
         self.make_connection(self.graph)
 
     def setup_ui(self):
-        self.setWindowTitle("Capteur")
+        self.setWindowTitle("Sensor")
         layout = QVBoxLayout()
         self.setLayout(layout)
         self.selector = QComboBox()
@@ -42,7 +42,7 @@ class MainWindow(pg.GraphicsLayoutWidget):
         self.lum_min = 0
         self.lum_max = 0
         self.lum_mean = 0
-        self.stats = f"Stats:\t\t\t\tMinimum\t\tMaximum\t\tMean\nTemperature:\t\t\t{self.temp_min:.1f}\t\t\t{self.temp_max:.1f}\t\t\t{self.temp_mean:.1f}\nHumidity:\t\t\t{self.hum_min:.1f}\t\t\t{self.hum_max:.1f}\t\t\t{self.hum_mean:.1f}\nLuminosity:\t\t\t{self.lum_min:.1f}\t\t\t{self.lum_max:.1f}\t\t\t{self.lum_mean:.1f}\n"
+        self.stats = f"Stats:\t\t\t\tMinimum\t\tMaximum\t\tMean\nTemperature (°C):\t\t\t{self.temp_min:.1f}\t\t\t{self.temp_max:.1f}\t\t\t{self.temp_mean:.1f}\nHumidity (%):\t\t\t{self.hum_min:.1f}\t\t\t{self.hum_max:.1f}\t\t\t{self.hum_mean:.1f}\nLuminosity (%):\t\t\t{self.lum_min:.1f}\t\t\t{self.lum_max:.1f}\t\t\t{self.lum_mean:.1f}\n"
         self.statsWidget = QLabel(
             self.stats)
         # layout.addWidget(self.stats_label)
@@ -57,12 +57,16 @@ class MainWindow(pg.GraphicsLayoutWidget):
         self.graph.update_choice(s)
 
     def get_data(self):
-        self.file = QFileDialog.getOpenFileName(self,
-                                                # '28030254.TXT'
-                                                # , "Text Files (*.txt *.csv)")
-                                                "Open File", os.getcwd(), "Text Files (*.txt)")
+        try:
+            self.file = QFileDialog.getOpenFileName(self,
+                                                    # '28030254.TXT'
+                                                    # , "Text Files (*.txt *.csv)")
+                                                    "Open File", os.getcwd(), "Text Files (*.txt)")
         # print(file[0])
-
+            assert self.file[0][-3:].lower() == 'txt'
+        except AssertionError:
+            print('No file selected')
+            # sys.exit()
         try:
             df = pd.read_table(
                 self.file[0], sep='\s+',  # Choisir le nom du fichier
@@ -113,11 +117,11 @@ class Graph(pg.PlotWidget):
         self.update_choice(self.choice)
         self.lr = pg.LinearRegionItem(
             [self.timestamps[0], self.timestamps[0]+100])
-        self.lr.sigRegionChanged.connect(self.updateMean)
+        self.lr.sigRegionChanged.connect(self.updateStats)
         self.addItem(self.lr)
         self.stats = stats
 
-    def updateMean(self):
+    def updateStats(self):
         x = self.timestamps
         t = self.temp
         h = self.hum
@@ -130,26 +134,28 @@ class Graph(pg.PlotWidget):
         # print(lo, hi)
        # h = y[list(x).index(round(x0)):list(x).index(round(x1))]
         # print(list(x).index(round(lo)))
-
-        self.temp_min = np.nanmin(
-            t[list(x).index(round(x0)):list(x).index(round(x1))])
-        self.temp_max = np.nanmax(
-            t[list(x).index(round(x0)):list(x).index(round(x1))])
-        self.temp_mean = np.nanmean(
-            t[list(x).index(round(x0)):list(x).index(round(x1))])
-        self.hum_min = np.nanmin(
-            h[list(x).index(round(x0)):list(x).index(round(x1))])
-        self.hum_max = np.nanmax(
-            h[list(x).index(round(x0)):list(x).index(round(x1))])
-        self.hum_mean = np.nanmean(
-            h[list(x).index(round(x0)):list(x).index(round(x1))])
-        self.lum_min = np.nanmin(
-            l[list(x).index(round(x0)):list(x).index(round(x1))])
-        self.lum_max = np.nanmax(
-            l[list(x).index(round(x0)):list(x).index(round(x1))])
-        self.lum_mean = np.nanmean(
-            l[list(x).index(round(x0)):list(x).index(round(x1))])
-        self.stats = f"Stats:\t\t\t\tMinimum\t\tMaximum\t\tMean\nTemperature:\t\t\t{self.temp_min:.1f}\t\t\t{self.temp_max:.1f}\t\t\t{self.temp_mean:.1f}\nHumidity:\t\t\t{self.hum_min:.1f}\t\t\t{self.hum_max:.1f}\t\t\t{self.hum_mean:.1f}\nLuminosity:\t\t\t{self.lum_min:.1f}\t\t\t{self.lum_max:.1f}\t\t\t{self.lum_mean:.1f}\n"
+        try:
+            self.temp_min = np.nanmin(
+                t[list(x).index(round(x0)):list(x).index(round(x1))])
+            self.temp_max = np.nanmax(
+                t[list(x).index(round(x0)):list(x).index(round(x1))])
+            self.temp_mean = np.nanmean(
+                t[list(x).index(round(x0)):list(x).index(round(x1))])
+            self.hum_min = np.nanmin(
+                h[list(x).index(round(x0)):list(x).index(round(x1))])
+            self.hum_max = np.nanmax(
+                h[list(x).index(round(x0)):list(x).index(round(x1))])
+            self.hum_mean = np.nanmean(
+                h[list(x).index(round(x0)):list(x).index(round(x1))])
+            self.lum_min = np.nanmin(
+                l[list(x).index(round(x0)):list(x).index(round(x1))])
+            self.lum_max = np.nanmax(
+                l[list(x).index(round(x0)):list(x).index(round(x1))])
+            self.lum_mean = np.nanmean(
+                l[list(x).index(round(x0)):list(x).index(round(x1))])
+            self.stats = f"Stats:\t\t\t\tMinimum\t\tMaximum\t\tMean\nTemperature:\t\t\t{self.temp_min:.1f}\t\t\t{self.temp_max:.1f}\t\t\t{self.temp_mean:.1f}\nHumidity:\t\t\t{self.hum_min:.1f}\t\t\t{self.hum_max:.1f}\t\t\t{self.hum_mean:.1f}\nLuminosity:\t\t\t{self.lum_min:.1f}\t\t\t{self.lum_max:.1f}\t\t\t{self.lum_mean:.1f}\n"
+        except ValueError:
+            pass
        # print(self.stats)
         self.signal.emit(self.stats)
 
@@ -200,7 +206,7 @@ if __name__ == "__main__":
 # app = pg.mkQApp()
 # win = pg.GraphicsLayoutWidget(show=True, title='Données')
 # win.resize(900,480)
-# win.setWindowTitle('Capteurs')
+# win.setWindowTitle('Sensors')
 # p1 = win.addPlot(title="Temperature",axisItems = {'bottom': pg.DateAxisItem()})
 # p1.showGrid(x=True, y=True)
 # p1.plot(df3['Time_unix'], df3['Temp'])

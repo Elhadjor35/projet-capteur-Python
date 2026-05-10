@@ -20,7 +20,8 @@ class MainWindow(pg.GraphicsLayoutWidget):
         self.pick_file()
         self.setup_ui()
         self.worker = Worker()
-        self.make_connection(self.worker)
+        self.make_connection_worker(self.worker)
+       # self.make_connection_graph(self.graph)
         self.worker.start()
 
     def setup_ui(self):
@@ -37,11 +38,25 @@ class MainWindow(pg.GraphicsLayoutWidget):
         layout.addWidget(self.modes)
         self.mode = self.modes.currentText()
         self.modes.currentTextChanged.connect(self.mode_changed)
-
-        self.graph = Graph(self.choice, self.mode, self.file)
+        self.temp_min = 0
+        self.temp_max = 0
+        self.temp_mean = 0
+        self.hum_min = 0
+        self.hum_max = 0
+        self.hum_mean = 0
+        self.lum_min = 0
+        self.lum_max = 0
+        self.lum_mean = 0
+        self.stats = f"Stats:\t\t\t\tMinimum\t\tMaximum\t\tMean\nTemperature (°C):\t\t\t{self.temp_min:.1f}\t\t\t{self.temp_max:.1f}\t\t\t{self.temp_mean:.1f}\nHumidity (%):\t\t\t{self.hum_min:.1f}\t\t\t{self.hum_max:.1f}\t\t\t{self.hum_mean:.1f}\nLuminosity (%):\t\t\t{self.lum_min:.1f}\t\t\t{self.lum_max:.1f}\t\t\t{self.lum_mean:.1f}\n"
+        self.statsWidget = QLabel(
+            self.stats)
+        # layout.addWidget(self.stats_label)
+        # self.text = pg.TextItem(
+        #     # f"Min: {y_min}\nMax: {y_max}\nMoy: {y_mean:.2f}"
+        #     text="fssd", color='w')
+        self.graph = Graph(self.choice, self.mode, self.file, self.stats)
         layout.addWidget(self.graph)
-        self.stats_label = QLabel("Stats:")
-        layout.addWidget(self.stats_label)
+        layout.addWidget(self.statsWidget)
 
     def choice_changed(self, s):
         self.graph.update_choice(s)
@@ -67,8 +82,11 @@ class MainWindow(pg.GraphicsLayoutWidget):
             sys.exit()
         # self.file = file
 
-    def make_connection(self, data_object):
+    def make_connection_worker(self, data_object):
         data_object.signal.connect(self.grab_data)
+
+   # def make_connection_graph(self, stats):
+    #    stats.signal.connect(self.update_stats)
 
     @Slot(object)
     def grab_data(self, d):
@@ -81,11 +99,21 @@ class MainWindow(pg.GraphicsLayoutWidget):
                 self.file[0], d[0], d[1], d[2], d[3])
         except FileNotFoundError:
             sys.exit()
+        self.statsWidget.setText(self.graph.updateStats())
+        # self.graph.updateStats()
+
+    # @Slot(object)
+    def update_stats(self, stats):
+        self.stats = stats
+        print(self.stats)
+        self.statsWidget.setText(self.stats)
     # def closeEvent(self, event):
 
 
 class Graph(pg.PlotWidget):
-    def __init__(self, choice, mode, file):
+    # signal = Signal(object)
+
+    def __init__(self, choice, mode, file, stats):
         super().__init__(parent=None)
         self.setTitle(file[0])
         self.setAxisItems(axisItems={"bottom": pg.DateAxisItem()})
@@ -106,6 +134,7 @@ class Graph(pg.PlotWidget):
             "Luminosity": 0,
         }
         self.update_curve(self.data0)
+        self.stats = stats
 
     def update_mode(self, s):
         print(s)
@@ -124,6 +153,47 @@ class Graph(pg.PlotWidget):
             self.ordinate = self.setLabel("left", s, "%")
             self.setYRange(0, 100)
         self.choice = s
+
+    def updateStats(self):
+        # x = self.timestamps
+        # t = self.temp
+        # h = self.hum
+        # l = self.lum
+        # print(lr.getRegion(), type(lr.getRegion()))
+        # print(np.mean())
+        # print(list(x))
+        # print(list(y))
+        # x0, x1 = self.timestamps[0], self.timestamps[-1]
+        # print(lo, hi)
+       # h = y[list(x).index(round(x0)):list(x).index(round(x1))]
+        # print(list(x).index(round(lo)))
+        try:
+            self.temp_min = np.nanmin(
+                self.temp)
+            self.temp_max = np.nanmax(
+                self.temp)
+            self.temp_mean = np.nanmean(
+                self.temp)
+            self.hum_min = np.nanmin(
+                self.hum)
+            self.hum_max = np.nanmax(
+                self.hum)
+            self.hum_mean = np.nanmean(
+                self.hum)
+            self.lum_min = np.nanmin(
+                self.lum)
+            self.lum_max = np.nanmax(
+                self.lum)
+            self.lum_mean = np.nanmean(
+                self.lum)
+            print(self.temp_min, self.temp_max)
+            self.stats = f"Stats:\t\t\t\tMinimum\t\tMaximum\t\tMean\nTemperature:\t\t\t{self.temp_min:.1f}\t\t\t{self.temp_max:.1f}\t\t\t{self.temp_mean:.1f}\nHumidity:\t\t\t{self.hum_min:.1f}\t\t\t{self.hum_max:.1f}\t\t\t{self.hum_mean:.1f}\nLuminosity:\t\t\t{self.lum_min:.1f}\t\t\t{self.lum_max:.1f}\t\t\t{self.lum_mean:.1f}\n"
+        except ValueError as e:
+            print(e)
+            pass
+        return self.stats
+
+        # self.signal.emit(self.stats)
 
     def update_curve(self, d):
         timestamp = d["Time"]
