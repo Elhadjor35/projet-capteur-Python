@@ -12,6 +12,7 @@ import time
 from serial_reader import read_serial
 from data_logger import save_data
 import os
+import sys
 
 
 class MainWindow(pg.GraphicsLayoutWidget):
@@ -261,14 +262,3 @@ class Worker(QThread):
 
     def stop(self):
         self.keepRunning = False
-
-
-if __name__ == "__main__":
-    import sys
-    if not QApplication.instance():
-        app = QApplication(sys.argv)
-    else:
-        app = QApplication.instance()
-    widget = MainWindow(Graph)
-    widget.show()
-    sys.exit(app.exec())

@@ -9,7 +9,7 @@ import datetime
 import tzlocal
 
 
-def save_data(filename, timestamp, temp, hum, lum):
+def save_data(file, timestamp, temp, hum, lum):
     date = datetime.datetime.fromtimestamp(timestamp, tzlocal.get_localzone())
     if date.day < 10:
         dateday = '0'+str(date.day)
@@ -34,13 +34,7 @@ def save_data(filename, timestamp, temp, hum, lum):
     else:
         datesecond = str(date.second)
 
-    with open(filename, 'a', newline='') as f:
-
-        # if not file_exists:
-        #     f.write(
-        #         "day\tmonth\tyear\thour\tminute\tsecond\tTemperature\tHumidity\tLuminosity\n")
-        #     print(
-        #         "day\tmonth\tyear\thour\tminute\tsecond\tTemperature\tHumidity\tLuminosity\n")
+    with open(file, 'a', newline='') as f:
 
         f.write(
             f'{dateday}\t{datemonth}\t{dateyear}\t{datehour}\t{dateminute}\t{datesecond}\t{temp}\t{hum}\t{lum}\n')

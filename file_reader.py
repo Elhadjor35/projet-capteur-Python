@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QApplication, QVBoxLayout, QComboBox, QLabel, QFil
 from PySide6.QtCore import Signal, Slot
 import pyqtgraph as pg
 import numpy as np
-
+import sys
 import pandas as pd
 import os
 
@@ -67,6 +67,7 @@ class MainWindow(pg.GraphicsLayoutWidget):
             assert self.file[0][-3:].lower() == 'txt'
         except AssertionError:
             print('No file selected')
+            sys.exit()
 
         try:
             df = pd.read_table(
@@ -175,14 +176,3 @@ class Graph(pg.PlotWidget):
             data = self.lum
 
         self.curve.setData(self.timestamps, data)
-
-
-if __name__ == "__main__":
-    import sys
-    if not QApplication.instance():
-        app = QApplication(sys.argv)
-    else:
-        app = QApplication.instance()
-    widget = MainWindow(Graph)
-    widget.show()
-    sys.exit(app.exec())

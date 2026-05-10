@@ -6,7 +6,6 @@ Created on Fri Mar 27 20:22:22 2026
 """
 if __name__ == '__main__':
     from file_reader import MainWindow, Graph
-
     import sys
     from PySide6.QtWidgets import QApplication
     if not QApplication.instance():
