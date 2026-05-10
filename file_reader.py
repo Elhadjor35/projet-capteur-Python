@@ -70,16 +70,32 @@ class MainWindow(pg.GraphicsLayoutWidget):
             sys.exit()
 
         try:
+            # df = pd.read_table(
+            #     self.file[0], sep='\s+',
+            #     names=['day', 'month', 'year', 'hour',
+            #            'minute', 'second', "Temperature", "Humidity", "Luminosity"],
+            #     header=0, parse_dates={'Time': ['day', 'month', 'year', 'hour',
+            #                                     'minute', 'second']},
+            #     date_format={'Time': '%d %m %y %H %M %S'})
             df = pd.read_table(
                 self.file[0], sep='\s+',
                 names=['day', 'month', 'year', 'hour',
-                       'minute', 'second', "Temperature", "Humidity", "Luminosity"],
-                header=0, parse_dates={'Time': ['day', 'month', 'year', 'hour',
-                                                'minute', 'second']},
-                date_format={'Time': '%d %m %y %H %M %S'})
+                       'minute', 'second', "Temperature", "Humidity", "Luminosity"], header=0)
+
+            df['day'] = df['day'].map(lambda x: f'{x:0>2}')
+            df['month'] = df['month'].map(lambda x: f'{x:0>2}')
+            df['hour'] = df['hour'].map(lambda x: f'{x:0>2}')
+            df['minute'] = df['minute'].map(lambda x: f'{x:0>2}')
+            df['second'] = df['second'].map(lambda x: f'{x:0>2}')
+
+            df["Time"] = df['day'].map(str) + df['month'].map(str) + df['year'].map(
+                str) + df['hour'].map(str)+df['minute'].map(str) + df['second'].map(str)
+
+            df["Time"] = pd.to_datetime(df["Time"], format='%d%m%y%H%M%S')
             df2 = df.drop(df[(df["Temperature"] == 0) & (df["Luminosity"] == 0)
                              & (df["Humidity"] == 0)].index).reset_index()
             df3 = df2
+
             df3['Time'] = df2['Time'].dt.tz_localize(tz='Europe/Paris')
             df3['Time_unix'] = pd.to_datetime(df3['Time']).astype(int) / 10**9
             self.df = df3

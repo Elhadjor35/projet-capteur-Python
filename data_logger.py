@@ -35,7 +35,6 @@ def save_data(file, timestamp, temp, hum, lum):
         datesecond = str(date.second)
 
     with open(file, 'a', newline='') as f:
-
         f.write(
             f'{dateday}\t{datemonth}\t{dateyear}\t{datehour}\t{dateminute}\t{datesecond}\t{temp}\t{hum}\t{lum}\n')
         print(f'{dateday}\t{datemonth}\t{dateyear}\t{datehour}\t{dateminute}\t{datesecond}\t{temp}\t{hum}\t{lum}\n')
