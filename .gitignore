@@ -4,3 +4,5 @@ __pycache__/realtime_plot.cpython-314.pyc
 __pycache__/serial_reader.cpython-314.pyc
 __pycache__/data_logger.cpython-314.pyc
 09021704 copy.TXT
+*.pyc
+*.txt

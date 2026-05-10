@@ -17,16 +17,15 @@ def read_serial(mode="Simulation", port='/dev/ttyACM0', baudrate=9600):
     if mode == "Real":
 
         try:
-            # Ouvrir le port série (remplace 'COM7' par ton port réel)
+            # Open serial port (replace '/dev/ttyACM0' by system port ('/dev/ttyACM0', 'COM7', ...))
             ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
             print(ser)
 
             print("Lecture en cours... (Ctrl+C pour arrêter)")
 
             while True:
-                line = ser.readline().decode().strip()  # Lire et décoder la ligne reçue
+                line = ser.readline().decode().strip()
                 if line:
-                    # print("RAW:", line)  # debug
 
                     parts = line.split('\t')
 
@@ -57,7 +56,7 @@ def read_serial(mode="Simulation", port='/dev/ttyACM0', baudrate=9600):
 
         finally:
             if 'ser' in locals() and ser.is_open:
-                ser.close()  # Fermer proprement le port série
+                ser.close()
 
     elif mode == "Simulation":
         t = time.time()

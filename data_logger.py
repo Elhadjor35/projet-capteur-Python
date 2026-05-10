@@ -5,20 +5,11 @@ Created on Fri Mar 27 20:20:12 2026
 @author: Majdo
 """
 
-import csv
-import os
 import datetime
 import tzlocal
 
 
 def save_data(filename, timestamp, temp, hum, lum):
-    # os.makedirs(base_folder, exist_ok=True)
-    # Nom du fichier basé sur la date (ex: 2026-03-28.csv)
-    # print(base_folder, timestamp, temp, hum, lum)
-    # Source - https://stackoverflow.com/a/37188257
-    # Posted by rkachach, modified by community. See post 'Timeline' for change history
-    # Retrieved 2026-05-09, License - CC BY-SA 3.0
-
     date = datetime.datetime.fromtimestamp(timestamp, tzlocal.get_localzone())
     if date.day < 10:
         dateday = '0'+str(date.day)
@@ -42,12 +33,6 @@ def save_data(filename, timestamp, temp, hum, lum):
         datesecond = '0'+str(date.second)
     else:
         datesecond = str(date.second)
-
-    # filename = f"{dateday}{datemonth}{datehour}{dateminute}.TXT"
-
-    # filepath = os.path.join(base_folder, filename)
-
-    # file_exists = os.path.isfile(filepath)
 
     with open(filename, 'a', newline='') as f:
 

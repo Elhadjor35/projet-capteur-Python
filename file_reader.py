@@ -6,11 +6,11 @@ Created on Fri Feb 20 14:58:56 2026
 @author: elhadj
 """
 
-from PySide6.QtWidgets import QApplication, QVBoxLayout, QComboBox, QLabel, QFileDialog, QGraphicsTextItem
-from PySide6.QtCore import QThread, Signal, Slot
+from PySide6.QtWidgets import QApplication, QVBoxLayout, QComboBox, QLabel, QFileDialog
+from PySide6.QtCore import Signal, Slot
 import pyqtgraph as pg
 import numpy as np
-import time
+
 import pandas as pd
 import os
 
@@ -25,11 +25,10 @@ class MainWindow(pg.GraphicsLayoutWidget):
 
     def setup_ui(self):
         self.setWindowTitle("Sensor")
-        layout = QVBoxLayout()
-        self.setLayout(layout)
+
         self.selector = QComboBox()
         self.selector.addItems(["Temperature", "Humidity", "Luminosity"])
-        layout.addWidget(self.selector)
+
         self.choice = self.selector.currentText()
         self.selector.currentTextChanged.connect(self.choice_changed)
 
@@ -48,11 +47,11 @@ class MainWindow(pg.GraphicsLayoutWidget):
                       f"Luminosity:\t\t\t{self.lum_min:.1f}\t\t\t{self.lum_max:.1f}\t\t\t{self.lum_mean:.1f}\n")
         self.statsWidget = QLabel(
             self.stats)
-        # layout.addWidget(self.stats_label)
-        # self.text = pg.TextItem(
-        #     # f"Min: {y_min}\nMax: {y_max}\nMoy: {y_mean:.2f}"
-        #     text="fssd", color='w')
+
         self.graph = Graph(self.choice, self.df, self.file, self.stats)
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+        layout.addWidget(self.selector)
         layout.addWidget(self.graph)
         layout.addWidget(self.statsWidget)
 
@@ -62,17 +61,16 @@ class MainWindow(pg.GraphicsLayoutWidget):
     def get_data(self):
         try:
             self.file = QFileDialog.getOpenFileName(self,
-                                                    # '28030254.TXT'
-                                                    # , "Text Files (*.txt *.csv)")
+
                                                     "Open File", os.getcwd(), "Text Files (*.txt)")
-        # print(file[0])
+
             assert self.file[0][-3:].lower() == 'txt'
         except AssertionError:
             print('No file selected')
-            # sys.exit()
+
         try:
             df = pd.read_table(
-                self.file[0], sep='\s+',  # Choisir le nom du fichier
+                self.file[0], sep='\s+',
                 names=['day', 'month', 'year', 'hour',
                        'minute', 'second', "Temperature", "Humidity", "Luminosity"],
                 header=0, parse_dates={'Time': ['day', 'month', 'year', 'hour',
@@ -129,14 +127,9 @@ class Graph(pg.PlotWidget):
         t = self.temp
         h = self.hum
         l = self.lum
-        # print(lr.getRegion(), type(lr.getRegion()))
-        # print(np.mean())
-        # print(list(x))
-        # print(list(y))
+
         x0, x1 = self.lr.getRegion()
-        # print(lo, hi)
-       # h = y[list(x).index(round(x0)):list(x).index(round(x1))]
-        # print(list(x).index(round(lo)))
+
         try:
             self.temp_min = np.nanmin(
                 t[list(x).index(round(x0)):list(x).index(round(x1))])
@@ -162,7 +155,7 @@ class Graph(pg.PlotWidget):
                           f"Luminosity:\t\t\t{self.lum_min:.1f}\t\t\t{self.lum_max:.1f}\t\t\t{self.lum_mean:.1f}\n")
         except ValueError:
             pass
-       # print(self.stats)
+
         self.signal.emit(self.stats)
 
     def update_choice(self, s):
@@ -180,8 +173,7 @@ class Graph(pg.PlotWidget):
             self.ordinate = self.setLabel("left", s, "%")
             self.setYRange(0, 100)
             data = self.lum
-        # print(self.timestamps)
-        # print(data)
+
         self.curve.setData(self.timestamps, data)
 
 
@@ -194,37 +186,3 @@ if __name__ == "__main__":
     widget = MainWindow(Graph)
     widget.show()
     sys.exit(app.exec())
-# import pyqtgraph as pg
-# import pandas as pd
-# from pyqtgraph.Qt import QtGui, QtWidgets, mkQApp
-
-# fichier_entree = '09021802.TXT'
-
-# # %%
-# df = pd.read_csv(fichier_entree,sep='\s+',header=0)
-# print(df)
-# # %%
-# df2 = df.drop(df[(df["Temp"]==0) & (df["Lum"] == 0 ) & (df["Hum"]== 0)].index).reset_index()
-# df3 = df2
-# df3['Time']=df2['Time'].dt.tz_localize(tz='Europe/Paris')
-# df3['Time_unix']=pd.to_datetime(df3['Time']).astype(int) / 10**9
-# # %%
-# app = pg.mkQApp()
-# win = pg.GraphicsLayoutWidget(show=True, title='Données')
-# win.resize(900,480)
-# win.setWindowTitle('Sensors')
-# p1 = win.addPlot(title="Temperature",axisItems = {'bottom': pg.DateAxisItem()})
-# p1.showGrid(x=True, y=True)
-# p1.plot(df3['Time_unix'], df3['Temp'])
-
-# p2 = win.addPlot(title="Humidité",axisItems = {'bottom': pg.DateAxisItem()})
-# p2.showGrid(x=True, y=True)
-# p2.plot(df3['Time_unix'], df3['Hum'])
-
-# p3 = win.addPlot(title="Luminosité",axisItems = {'bottom': pg.DateAxisItem()})
-# p3.showGrid(x=True, y=True)
-# p3.plot(df3['Time_unix'], df3['Lum'])
-# # %%
-
-# if __name__ == '__main__':
-#     pg.exec()
