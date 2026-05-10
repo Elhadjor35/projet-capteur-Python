@@ -6,7 +6,7 @@ Created on Fri Feb 20 14:58:56 2026
 @author: elhadj
 """
 
-from PySide6.QtWidgets import QApplication, QVBoxLayout, QComboBox, QLabel, QFileDialog
+from PySide6.QtWidgets import QApplication, QVBoxLayout, QComboBox, QLabel, QFileDialog, QGraphicsTextItem
 from PySide6.QtCore import QThread, Signal, Slot
 import pyqtgraph as pg
 import numpy as np
@@ -21,6 +21,7 @@ class MainWindow(pg.GraphicsLayoutWidget):
 
         self.get_data()
         self.setup_ui()
+        self.make_connection(self.graph)
 
     def setup_ui(self):
         self.setWindowTitle("Capteur")
@@ -32,10 +33,25 @@ class MainWindow(pg.GraphicsLayoutWidget):
         self.choice = self.selector.currentText()
         self.selector.currentTextChanged.connect(self.choice_changed)
 
-        self.graph = Graph(self.choice, self.df, self.file)
+        self.temp_min = 0
+        self.temp_max = 0
+        self.temp_mean = 0
+        self.hum_min = 0
+        self.hum_max = 0
+        self.hum_mean = 0
+        self.lum_min = 0
+        self.lum_max = 0
+        self.lum_mean = 0
+        self.stats = f"Stats:\t\t\t\tMinimum\t\tMaximum\t\tMean\nTemperature:\t\t\t{self.temp_min:.1f}\t\t\t{self.temp_max:.1f}\t\t\t{self.temp_mean:.1f}\nHumidity:\t\t\t{self.hum_min:.1f}\t\t\t{self.hum_max:.1f}\t\t\t{self.hum_mean:.1f}\nLuminosity:\t\t\t{self.lum_min:.1f}\t\t\t{self.lum_max:.1f}\t\t\t{self.lum_mean:.1f}\n"
+        self.statsWidget = QLabel(
+            self.stats)
+        # layout.addWidget(self.stats_label)
+        # self.text = pg.TextItem(
+        #     # f"Min: {y_min}\nMax: {y_max}\nMoy: {y_mean:.2f}"
+        #     text="fssd", color='w')
+        self.graph = Graph(self.choice, self.df, self.file, self.stats)
         layout.addWidget(self.graph)
-        self.stats_label = QLabel("Stats:")
-        layout.addWidget(self.stats_label)
+        layout.addWidget(self.statsWidget)
 
     def choice_changed(self, s):
         self.graph.update_choice(s)
@@ -49,7 +65,7 @@ class MainWindow(pg.GraphicsLayoutWidget):
 
         try:
             df = pd.read_table(
-                file[0], sep='\s+',  # Choisir le nom du fichier
+                self.file[0], sep='\s+',  # Choisir le nom du fichier
                 names=['day', 'month', 'year', 'hour',
                        'minute', 'second', "Temperature", "Humidity", "Luminosity"],
                 header=0, parse_dates={'Time': ['day', 'month', 'year', 'hour',
@@ -65,16 +81,27 @@ class MainWindow(pg.GraphicsLayoutWidget):
             print("Wrong file format", e)
             sys.exit()
 
+    def make_connection(self, stats):
+        stats.signal.connect(self.update_stats)
+
+    @Slot(object)
+    def update_stats(self, stats):
+        self.stats = stats
+        print(self.stats)
+        self.statsWidget.setText(self.stats)
+
     def closeEvent(self, event):
         QApplication.quit()
 
 
 class Graph(pg.PlotWidget):
-    def __init__(self, choice, df, file):
+    signal = Signal(object)
+
+    def __init__(self, choice, df, file, stats):
         super().__init__(parent=None)
         self.setTitle = self.setTitle(file[0])
         self.setAxisItems(axisItems={"bottom": pg.DateAxisItem()})
-        self.abscissa = self.setLabel("bottom", "Temps")
+        self.abscissa = self.setLabel("bottom", "Time")
         self.ordinate = self.setLabel("left", "Temperature", "°C")
         self.curve = self.plot(pen="y")
         self.df = df
@@ -84,9 +111,50 @@ class Graph(pg.PlotWidget):
         self.lum = df['Luminosity']
         self.choice = choice
         self.update_choice(self.choice)
+        self.lr = pg.LinearRegionItem(
+            [self.timestamps[0], self.timestamps[0]+100])
+        self.lr.sigRegionChanged.connect(self.updateMean)
+        self.addItem(self.lr)
+        self.stats = stats
+
+    def updateMean(self):
+        x = self.timestamps
+        t = self.temp
+        h = self.hum
+        l = self.lum
+        # print(lr.getRegion(), type(lr.getRegion()))
+        # print(np.mean())
+        # print(list(x))
+        # print(list(y))
+        x0, x1 = self.lr.getRegion()
+        # print(lo, hi)
+       # h = y[list(x).index(round(x0)):list(x).index(round(x1))]
+        # print(list(x).index(round(lo)))
+
+        self.temp_min = np.nanmin(
+            t[list(x).index(round(x0)):list(x).index(round(x1))])
+        self.temp_max = np.nanmax(
+            t[list(x).index(round(x0)):list(x).index(round(x1))])
+        self.temp_mean = np.nanmean(
+            t[list(x).index(round(x0)):list(x).index(round(x1))])
+        self.hum_min = np.nanmin(
+            h[list(x).index(round(x0)):list(x).index(round(x1))])
+        self.hum_max = np.nanmax(
+            h[list(x).index(round(x0)):list(x).index(round(x1))])
+        self.hum_mean = np.nanmean(
+            h[list(x).index(round(x0)):list(x).index(round(x1))])
+        self.lum_min = np.nanmin(
+            l[list(x).index(round(x0)):list(x).index(round(x1))])
+        self.lum_max = np.nanmax(
+            l[list(x).index(round(x0)):list(x).index(round(x1))])
+        self.lum_mean = np.nanmean(
+            l[list(x).index(round(x0)):list(x).index(round(x1))])
+        self.stats = f"Stats:\t\t\t\tMinimum\t\tMaximum\t\tMean\nTemperature:\t\t\t{self.temp_min:.1f}\t\t\t{self.temp_max:.1f}\t\t\t{self.temp_mean:.1f}\nHumidity:\t\t\t{self.hum_min:.1f}\t\t\t{self.hum_max:.1f}\t\t\t{self.hum_mean:.1f}\nLuminosity:\t\t\t{self.lum_min:.1f}\t\t\t{self.lum_max:.1f}\t\t\t{self.lum_mean:.1f}\n"
+       # print(self.stats)
+        self.signal.emit(self.stats)
 
     def update_choice(self, s):
-        self.setTitle(s)
+
         self.removeItem(self.ordinate)
         if s == "Temperature":
             self.ordinate = self.setLabel("left", s, "°C")
@@ -103,7 +171,6 @@ class Graph(pg.PlotWidget):
         # print(self.timestamps)
         # print(data)
         self.curve.setData(self.timestamps, data)
-        self.setTitle(s)
 
 
 if __name__ == "__main__":
