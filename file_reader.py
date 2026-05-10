@@ -42,7 +42,10 @@ class MainWindow(pg.GraphicsLayoutWidget):
         self.lum_min = 0
         self.lum_max = 0
         self.lum_mean = 0
-        self.stats = f"Stats:\t\t\t\tMinimum\t\tMaximum\t\tMean\nTemperature (°C):\t\t\t{self.temp_min:.1f}\t\t\t{self.temp_max:.1f}\t\t\t{self.temp_mean:.1f}\nHumidity (%):\t\t\t{self.hum_min:.1f}\t\t\t{self.hum_max:.1f}\t\t\t{self.hum_mean:.1f}\nLuminosity (%):\t\t\t{self.lum_min:.1f}\t\t\t{self.lum_max:.1f}\t\t\t{self.lum_mean:.1f}\n"
+        self.stats = (f"Stats:\t\t\t\tMinimum\t\tMaximum\t\tMean\n"
+                      f"Temperature:\t\t\t{self.temp_min:.1f}\t\t\t{self.temp_max:.1f}\t\t\t{self.temp_mean:.1f}\n"
+                      f"Humidity:\t\t\t{self.hum_min:.1f}\t\t\t{self.hum_max:.1f}\t\t\t{self.hum_mean:.1f}\n"
+                      f"Luminosity:\t\t\t{self.lum_min:.1f}\t\t\t{self.lum_max:.1f}\t\t\t{self.lum_mean:.1f}\n")
         self.statsWidget = QLabel(
             self.stats)
         # layout.addWidget(self.stats_label)
@@ -153,7 +156,10 @@ class Graph(pg.PlotWidget):
                 l[list(x).index(round(x0)):list(x).index(round(x1))])
             self.lum_mean = np.nanmean(
                 l[list(x).index(round(x0)):list(x).index(round(x1))])
-            self.stats = f"Stats:\t\t\t\tMinimum\t\tMaximum\t\tMean\nTemperature:\t\t\t{self.temp_min:.1f}\t\t\t{self.temp_max:.1f}\t\t\t{self.temp_mean:.1f}\nHumidity:\t\t\t{self.hum_min:.1f}\t\t\t{self.hum_max:.1f}\t\t\t{self.hum_mean:.1f}\nLuminosity:\t\t\t{self.lum_min:.1f}\t\t\t{self.lum_max:.1f}\t\t\t{self.lum_mean:.1f}\n"
+            self.stats = (f"Stats:\t\t\t\tMinimum\t\tMaximum\t\tMean\n"
+                          f"Temperature:\t\t\t{self.temp_min:.1f}\t\t\t{self.temp_max:.1f}\t\t\t{self.temp_mean:.1f}\n"
+                          f"Humidity:\t\t\t{self.hum_min:.1f}\t\t\t{self.hum_max:.1f}\t\t\t{self.hum_mean:.1f}\n"
+                          f"Luminosity:\t\t\t{self.lum_min:.1f}\t\t\t{self.lum_max:.1f}\t\t\t{self.lum_mean:.1f}\n")
         except ValueError:
             pass
        # print(self.stats)
